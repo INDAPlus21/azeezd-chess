@@ -21,4 +21,12 @@ mod tests {
             println!("{:?}", a.print_at(&input));
         }
     }
+
+    #[test]
+    fn get_moves() {
+        let a = chess::board::Board::new();
+        let moves = a.get_moves(&String::from("a7"));
+
+        println!("{:?}", moves);
+    }
 }

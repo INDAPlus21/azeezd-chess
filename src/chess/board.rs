@@ -28,7 +28,7 @@ impl Board {
     /// Print the Piece as a string in format "<Colour> <Piece Type>" at the given position given in "<Rank><File>".
     pub fn print_at(&self, position: &String) -> String {
         let coords = Board::convert_str_pos(position);
-        self.0[coords.0 as usize][coords.1 as usize].get_str()
+        self.0[coords.1 as usize][coords.0 as usize].get_str()
     }
 
     /// Print the entire board in a 8x8 structure where every piece is represented as "<Colour> <Piece Type>"
@@ -42,21 +42,44 @@ impl Board {
     }
 
     /// Converts the "<Rank><File>" format into array indices to work with the array board
-    fn convert_str_pos(position: &String) -> (u8, u8) {
+    pub fn convert_str_pos(position: &String) -> (i8, i8) {
         let mut coords = (0,0);
         
         let position = position.as_bytes();
 
         // The rank represnts the y-axis thus it is the 1st coordinate
         // And the file the x-axes hence the 0th coordinate
-        coords.1 = position[0] - 97; // Lowercase alphabet to u8 using ascii value different between letter and numerical value that is 1-indexed
+        coords.0 = (position[0] - 97) as i8; // Lowercase alphabet to u8 using ascii value different between letter and numerical value that is 1-indexed
 
         /* Convert number as ascii char to actual numerical value by doing minus 49 (ascii difference) but the the board's origin is at bottom left
            So the x coordinate must shift by 7 - (top left origin coord) thus
            7 - ([ascii val] - 49) gives 56 - [ascii val]
         */
-        coords.0 = 56 - position[1]; 
+        coords.1 = (56 - position[1]) as i8; 
 
         coords
+    }
+
+    pub fn convert_coord_pos(coords: &(i8, i8)) -> String {
+        let mut string_coords = String::with_capacity(2);
+
+        string_coords.push((coords.0 as u8 + 97) as char);
+        string_coords.push((56 - coords.1 as u8) as char);
+
+        string_coords
+    }
+
+    pub fn piece_at(&self, coords: &(i8, i8)) -> &Piece {
+        &self.0[coords.1 as usize][coords.0 as usize]
+    }
+
+    pub fn get_moves(&self, position: &String) -> Vec<String> {
+        let coords = Board::convert_str_pos(position);
+        self.piece_at(&coords).get_moves(&coords, &self)
+    }
+
+    pub fn within_bounds(coords: &(i8, i8)) -> bool {
+        coords.0 <= 7 && coords.0 >= 0 &&
+        coords.1 <= 7 && coords.1 >= 0 
     }
 }

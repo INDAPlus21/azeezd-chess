@@ -1,4 +1,5 @@
 use super::piece_data::*;
+use super::board::*;
 
 /// Piece used in the game, stores colour, piece type and other flags in a u8
 pub struct Piece(u8);
@@ -74,47 +75,95 @@ impl Piece {
         }
     }
 
+    fn is_empty(&self) -> bool {
+        self.0 == 0
+    }
+
+    fn get_colour(&self) -> Colour {
+        match self.0 & 1 {
+            0 => Colour::White,
+            _ => Colour::Black
+        }
+    }
+
     // Get possible moves of the piece (TO BE IMPLEMENTED)
-    fn get_moves(&self, position: &(u8, u8)) -> Vec<String> {
+    pub fn get_moves(&self, position: &(i8, i8), board: &Board) -> Vec<String> {
         match self.get_type() {
             PieceType::None => (vec![]),
-            PieceType::Pawn => {self.get_pawn_moves(position)}
-            PieceType::Knight => {self.get_knight_moves(position)}
-            PieceType::Bishop => {self.get_bishop_moves(position)}
-            PieceType::Rook => {self.get_rook_moves(position)}
-            PieceType::Queen => {self.get_queen_moves(position)}
-            PieceType::King => {self.get_king_moves(position)}
+            PieceType::Pawn => {self.get_pawn_moves(position, board)}
+            PieceType::Knight => {self.get_knight_moves(position, board)}
+            PieceType::Bishop => {self.get_bishop_moves(position, board)}
+            PieceType::Rook => {self.get_rook_moves(position, board)}
+            PieceType::Queen => {self.get_queen_moves(position, board)}
+            PieceType::King => {self.get_king_moves(position, board)}
         }
     }
 
     
     /// Get the legal moves this pawn piece.
-    fn get_pawn_moves(&self, position: &(u8,u8)) -> Vec<String> {
-        vec![] // To be implemented
+    fn get_pawn_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
+        let colour = self.get_colour();
+        let move_vector : i8 = if colour == Colour::White {-1} else {1};
+        let mut moves : Vec<String> = Vec::with_capacity(2);
+        let first_move = self.0 & 0x80;
+
+        let checked_coord = (position.0, (position.1 + move_vector));
+        if Board::within_bounds(&checked_coord) && board.piece_at(&checked_coord).is_empty()
+        {
+            moves.push(Board::convert_coord_pos(&checked_coord));
+        }
+
+        if first_move == 0x80 {
+            if board.piece_at(&checked_coord).is_empty(){
+                let checked_coord = (position.0, (position.1 + move_vector * 2));
+                if board.piece_at(&checked_coord).is_empty()
+                {
+                    moves.push(Board::convert_coord_pos(&checked_coord));
+                }
+            }
+        }
+
+        let checked_coord = (position.0 + move_vector, (position.1 + move_vector));
+        if Board::within_bounds(&checked_coord) && 
+           !board.piece_at(&checked_coord).is_empty() &&
+           board.piece_at(&checked_coord).get_colour() != colour
+        {
+            moves.push(Board::convert_coord_pos(&checked_coord));
+        }
+
+        let checked_coord = (position.0 - move_vector, (position.1 + move_vector));
+        if Board::within_bounds(&checked_coord) && 
+           !board.piece_at(&checked_coord).is_empty() &&
+           board.piece_at(&checked_coord).get_colour() != colour
+        {
+            moves.push(Board::convert_coord_pos(&checked_coord));
+        }
+
+        moves
     }
 
     /// Get the legal moves this knight piece.
-    fn get_knight_moves(&self, position: &(u8,u8)) -> Vec<String> {
+    fn get_knight_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
         vec![] // To be implemented
     }
 
     /// Get the legal moves this bishop piece.
-    fn get_bishop_moves(&self, position: &(u8,u8)) -> Vec<String> {
+    fn get_bishop_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
         vec![] // To be implemented
     }
 
     /// Get the legal moves this rook piece.
-    fn get_rook_moves(&self, position: &(u8,u8)) -> Vec<String> {
+    fn get_rook_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
         vec![] // To be implemented
     }
 
     /// Get the legal moves this queen piece.
-    fn get_queen_moves(&self, position: &(u8,u8)) -> Vec<String> {
+    fn get_queen_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
         vec![] // To be implemented
     }
 
     /// Get the legal moves this king piece.
-    fn get_king_moves(&self, position: &(u8,u8)) -> Vec<String> {
+    fn get_king_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
         vec![] // To be implemented        
     }
 }

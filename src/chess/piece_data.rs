@@ -10,6 +10,7 @@ pub enum PieceType {
 }
 
 /// Colours of piece and of the current turn
+#[derive(PartialEq)]
 pub enum Colour {
     White,
     Black
