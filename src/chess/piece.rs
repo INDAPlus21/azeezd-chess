@@ -218,13 +218,49 @@ impl Piece {
                 }   
             }
         }
-        
+
         moves
     }
 
     /// Get the legal moves this rook piece.
     fn get_rook_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
-        vec![] // To be implemented
+        let colour = self.get_colour();
+
+        // Store moves
+        let mut moves : Vec<String> = Vec::with_capacity(8);
+
+        // Move in horizontal and vertical directions, each axis has two sides from the rook thus 4 sides total
+        // Move until reaching a non-empty square:
+        // If enemy piece, add all squares to last including the last
+        // If ally piece, add all squares to last, excluding the last
+        for axis in DIRECTIONS { // Horizontal -1 or Vertical 1
+            for direction in DIRECTIONS { // left & right for horizontal, up & down for vertical
+                for square in 1..9 {
+                    // Current squared, mutable due to be added to later to determine next square
+                    let mut checked_coord = (position.0, position.1);
+
+                    // If horizontal then increment (or decrement) in horizontal axis
+                    if axis == -1 { checked_coord.0 += square * direction; }
+                    else { checked_coord.1 += square * direction; } // Else increment (or decrement) in vertical axis 
+
+                    if Board::within_bounds(&checked_coord) {
+                        let current_square = board.piece_at(&checked_coord);
+                        if current_square.is_empty() { // If the square being checked is empty add to legal moves
+                            moves.push(Board::convert_coord_pos(&checked_coord));
+                        }
+                        else { // Reached a non-empty square!
+                            if current_square.get_colour() != colour { // If opposite colour, add to legal moves (i.e can attack opponent)
+                                moves.push(Board::convert_coord_pos(&checked_coord));
+                            }
+                            break; // When reaching the non-empty square, break and go to next diagonal direction (if any left)
+                        }
+                    }
+                    else { break; } // If outside bound, break and go to next diagonal direction (if any left)
+                }
+            }
+        }
+
+        moves
     }
 
     /// Get the legal moves this queen piece.
