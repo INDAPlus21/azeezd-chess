@@ -265,7 +265,12 @@ impl Piece {
 
     /// Get the legal moves this queen piece.
     fn get_queen_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
-        vec![] // To be implemented
+        let mut moves : Vec<String> = Vec::new();
+
+        moves.append(&mut self.get_bishop_moves(position, board));
+        moves.append(&mut self.get_rook_moves(position, board));
+
+        moves
     }
 
     /// Get the legal moves this king piece.
