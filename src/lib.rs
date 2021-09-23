@@ -25,7 +25,7 @@ mod tests {
     #[test]
     fn get_moves() {
         let a = chess::board::Board::new();
-        let moves = a.get_moves(&String::from("b8"));
+        let moves = a.get_moves(&String::from("c5"));
 
         println!("{:?}", moves);
     }

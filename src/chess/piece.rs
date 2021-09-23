@@ -190,7 +190,36 @@ impl Piece {
 
     /// Get the legal moves this bishop piece.
     fn get_bishop_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
-        vec![] // To be implemented
+        let colour = self.get_colour();
+
+        // Store moves. Returned value
+        let mut moves : Vec<String> = Vec::with_capacity(8);
+
+        // Moves in all 4 diagonal directions until reaching a piece.
+        // If enemy piece, add all squares to last including the last
+        // If ally piece, add all squares to last, excluding the last
+        for direction_y in DIRECTIONS { // up and down
+            for direction_x in DIRECTIONS { // left and right
+                for square in 1..9 { // loop from min to max amount of moves for a bishop per direction
+                    let checked_coord = (position.0 + direction_x * square, position.1 + direction_y * square);
+                    if Board::within_bounds(&checked_coord) {
+                        let current_square = board.piece_at(&checked_coord);
+                        if current_square.is_empty() { // If the square being checked is empty add to legal moves
+                            moves.push(Board::convert_coord_pos(&checked_coord));
+                        }
+                        else { // Reached a non-empty square!
+                            if current_square.get_colour() != colour { // If opposite colour, add to legal moves (i.e can attack opponent)
+                                moves.push(Board::convert_coord_pos(&checked_coord));
+                            }
+                            break; // When reaching the non-empty square, break and go to next diagonal direction (if any left)
+                        }
+                    }
+                    else { break; } // If outside bound, break and go to next diagonal direction (if any left)
+                }   
+            }
+        }
+        
+        moves
     }
 
     /// Get the legal moves this rook piece.
