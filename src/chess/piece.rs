@@ -1,6 +1,10 @@
 use super::piece_data::*;
 use super::board::*;
 
+/// Array that stores directions.
+/// Used for iterating through different directions a piece can move.
+const DIRECTIONS : [i8; 2] = [-1, 1];
+
 /// Piece used in the game, stores colour, piece type and other flags in a u8
 pub struct Piece(u8);
 
@@ -103,19 +107,27 @@ impl Piece {
     /// Get the legal moves this pawn piece.
     fn get_pawn_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
         let colour = self.get_colour();
+
+        // Get the direction which the pawns moves, based on colour
         let move_vector : i8 = if colour == Colour::White {-1} else {1};
+
+        // Store legal moves (is the returned value)
         let mut moves : Vec<String> = Vec::with_capacity(2);
+
+        // Uses mask 1000000 to get the "is this the first move" bit flag
         let first_move = self.0 & 0x80;
 
-        let checked_coord = (position.0, (position.1 + move_vector));
+        // The classical one step forward move
+        let checked_coord = (position.0, position.1 + move_vector);
         if Board::within_bounds(&checked_coord) && board.piece_at(&checked_coord).is_empty()
         {
             moves.push(Board::convert_coord_pos(&checked_coord));
         }
 
+        // If the first move bit flag is on then check and add the two-step pawn move
         if first_move == 0x80 {
             if board.piece_at(&checked_coord).is_empty(){
-                let checked_coord = (position.0, (position.1 + move_vector * 2));
+                let checked_coord = (position.0, position.1 + move_vector * 2);
                 if board.piece_at(&checked_coord).is_empty()
                 {
                     moves.push(Board::convert_coord_pos(&checked_coord));
@@ -123,7 +135,8 @@ impl Piece {
             }
         }
 
-        let checked_coord = (position.0 + move_vector, (position.1 + move_vector));
+        // Check for possible on right side
+        let checked_coord = (position.0 + move_vector, position.1 + move_vector);
         if Board::within_bounds(&checked_coord) && 
            !board.piece_at(&checked_coord).is_empty() &&
            board.piece_at(&checked_coord).get_colour() != colour
@@ -131,20 +144,48 @@ impl Piece {
             moves.push(Board::convert_coord_pos(&checked_coord));
         }
 
-        let checked_coord = (position.0 - move_vector, (position.1 + move_vector));
+        // Check for possible attacks on the left side
+        let checked_coord = (position.0 - move_vector, position.1 + move_vector);
         if Board::within_bounds(&checked_coord) && 
            !board.piece_at(&checked_coord).is_empty() &&
            board.piece_at(&checked_coord).get_colour() != colour
         {
             moves.push(Board::convert_coord_pos(&checked_coord));
         }
+
+        // En passant to be added
 
         moves
     }
 
     /// Get the legal moves this knight piece.
     fn get_knight_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
-        vec![] // To be implemented
+        let colour = self.get_colour();
+
+        // Store moves. Returned value
+        let mut moves : Vec<String> = Vec::with_capacity(2);
+        
+        /* A knight can move up to maximum of 8 ways.
+           It is the L shaped move in 2 ways: 
+           2 for the front side's left and right = 4
+           2 for the back's side left and right = 4
+        */
+        for direction_x in DIRECTIONS { // front and back
+            for direction_y in DIRECTIONS { // left and right
+                for l_long_side in 0..2 { // two directions of the L shape
+                    let checked_coord = (position.0 + direction_x * (1 + l_long_side), 
+                                        position.1 + direction_y * (2 - l_long_side));
+                    if Board::within_bounds(&checked_coord) && (
+                    board.piece_at(&checked_coord).is_empty() ||
+                    board.piece_at(&checked_coord).get_colour() != colour)
+                    {
+                        moves.push(Board::convert_coord_pos(&checked_coord));
+                    } 
+                }
+            }
+        }
+
+        moves
     }
 
     /// Get the legal moves this bishop piece.
