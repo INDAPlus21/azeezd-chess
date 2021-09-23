@@ -65,6 +65,19 @@ impl Piece {
         piece_name
     }
 
+    pub fn get_icon(&self) -> char {
+        // Uses mask 00001110 to get the type (read more in the main README)
+        match self.0 & 14 {
+            2 => 'P',
+            4 => 'N',
+            6 => 'B',
+            8 => 'R',
+            10 => 'Q',
+            12 => 'K',
+            _ => '■'
+        }
+    }
+
     /// Get the type of piece as represented in the PieceType enum
     /// Uses the mask 00001110 to get the bits that represent the type
     fn get_type(&self) -> PieceType {
@@ -275,6 +288,24 @@ impl Piece {
 
     /// Get the legal moves this king piece.
     fn get_king_moves(&self, position: &(i8,i8), board: &Board) -> Vec<String> {
-        vec![] // To be implemented        
+        let colour = self.get_colour();
+
+        // Store moves
+        let mut moves : Vec<String> = Vec::with_capacity(4);
+
+        // Check the 3x3 square around the king
+        for col in -1..2 {
+            for row in -1..2 {
+                let checked_coord = (position.0 + col, position.1 + row);
+                if Board::within_bounds(&checked_coord) && 
+                   !board.piece_at(&checked_coord).is_empty() &&
+                   board.piece_at(&checked_coord).get_colour() != colour
+                {
+                    moves.push(Board::convert_coord_pos(&checked_coord));
+                } 
+            }
+        }
+        
+        moves
     }
 }
