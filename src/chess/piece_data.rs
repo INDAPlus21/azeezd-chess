@@ -1,4 +1,5 @@
 /// Pieces used in chess
+#[derive(PartialEq)]
 pub enum PieceType {
     None,
     Pawn,

@@ -6,7 +6,8 @@ use super::board::*;
 const DIRECTIONS : [i8; 2] = [-1, 1];
 
 /// Piece used in the game, stores colour, piece type and other flags in a u8
-pub struct Piece(u8);
+#[derive(Copy, Clone)]
+pub struct Piece(pub (super) u8);
 
 impl Piece {
     /// Generate a piece using a u8. Instructions found in the main README
@@ -80,7 +81,7 @@ impl Piece {
 
     /// Get the type of piece as represented in the PieceType enum
     /// Uses the mask 00001110 to get the bits that represent the type
-    fn get_type(&self) -> PieceType {
+    pub fn get_type(&self) -> PieceType {
         match self.0 & 14 {
             2 => PieceType::Pawn,
             4 => PieceType::Knight,
@@ -92,16 +93,34 @@ impl Piece {
         }
     }
 
+    pub fn set_type(&mut self, piece_type: PieceType) {
+        // Gets a typeless piece by setting its type bits to 000 by using the mask 111100011 (f1 in HEX)
+        let masked = self.0 & 0xf1;
+
+        // Adding the new piece type into the masks
+        match piece_type {
+            PieceType::None => {self.0 = 0},
+            PieceType::Pawn => {self.0 = masked | 2}
+            PieceType::Knight => {self.0 = masked | 4}
+            PieceType::Bishop => {self.0 = masked | 6}
+            PieceType::Rook => {self.0 = masked | 8}
+            PieceType::Queen => {self.0 = masked | 10}
+            PieceType::King => {self.0 = masked | 12}
+        }
+    }
+
     fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
-    fn get_colour(&self) -> Colour {
+    pub fn get_colour(&self) -> Colour {
         match self.0 & 1 {
             0 => Colour::White,
             _ => Colour::Black
         }
     }
+
+    // === MOVES ===
 
     // Get possible moves of the piece (TO BE IMPLEMENTED)
     pub fn get_moves(&self, position: &(i8, i8), board: &Board) -> Vec<String> {
@@ -166,7 +185,20 @@ impl Piece {
             moves.push(Board::convert_coord_pos(&checked_coord));
         }
 
-        // En passant to be added
+        // Check if pawn is in its fifth rank for en passant
+        if position.0 == 3 || position.0 == 4 {
+            for direction in DIRECTIONS {
+                let checked_coord = (position.0 + direction, position.1 + move_vector);
+                let en_passanting_piece = (position.0 + direction, position.1);
+                
+                if Board::within_bounds(&en_passanting_piece) && Board::within_bounds(&checked_coord)
+                   && board.piece_at(&en_passanting_piece).0 & 0x20 == 0x20
+                   && board.piece_at(&checked_coord).is_empty()
+                {
+                    moves.push(Board::convert_coord_pos(&checked_coord));
+                }
+            }
+        }
 
         moves
     }
@@ -307,5 +339,93 @@ impl Piece {
         }
         
         moves
+    }
+
+    // === CHECK AND CHECKMATE ===
+
+    pub fn checking_king(&self, king_piece: &(i8, i8), this_piece_coord : &(i8, i8), precalculated_moves: Option<&Vec<String>>, board: &Board) -> bool {
+        if self.0 == 0 { return false; }
+
+        // Get piece type bits
+        match self.0 & 14 {
+            2 => self.pawn_checking(king_piece, this_piece_coord, precalculated_moves, board),
+            4 => self.knight_checking(king_piece, this_piece_coord, precalculated_moves, board),
+            6 => self.bishop_checking(king_piece, this_piece_coord, precalculated_moves, board),
+            8 => self.rook_checking(king_piece, this_piece_coord, precalculated_moves, board),
+            10 => self.queen_checking(king_piece, this_piece_coord, precalculated_moves, board),
+            _ => false
+        }
+    }
+
+    fn pawn_checking(&self, king_piece: &(i8, i8), this_piece_coord : &(i8, i8), precalculated_moves: Option<&Vec<String>>, board: &Board) -> bool {
+        // If not within 2 square radius or if king is behind pawn, return false
+        if king_piece.0 - this_piece_coord.0 > 1 || this_piece_coord.0 - king_piece.0 > 1 ||
+           king_piece.1 - this_piece_coord.1 > 1 || this_piece_coord.1 - king_piece.1 > 1 {return false;}
+
+        if precalculated_moves.is_none() {
+            let moves = self.get_pawn_moves(this_piece_coord, board);
+            println!("{:?}", moves);
+
+            return Piece::check_for_moves(king_piece, &moves);
+        }
+        
+        Piece::check_for_moves(king_piece, precalculated_moves.unwrap())
+    }
+
+    fn knight_checking(&self, king_piece: &(i8, i8), this_piece_coord : &(i8, i8), precalculated_moves: Option<&Vec<String>>, board: &Board) -> bool {
+        // If king outside radius; 2 squares on each axis, return false
+        if king_piece.0 - this_piece_coord.0 > 2 || this_piece_coord.0 - king_piece.0 > 2 ||
+           king_piece.1 - this_piece_coord.1 > 2 || this_piece_coord.1 - king_piece.1 > 2 {return false;}
+
+        if precalculated_moves.is_none() {
+            let moves = self.get_knight_moves(this_piece_coord, board);
+            return Piece::check_for_moves(king_piece, &moves);
+        }
+
+        Piece::check_for_moves(king_piece, precalculated_moves.unwrap())
+    }
+
+    fn bishop_checking(&self, king_piece: &(i8, i8), this_piece_coord : &(i8, i8), precalculated_moves: Option<&Vec<String>>, board: &Board) -> bool {
+        // Send bishop coords to origin (0,0) remove the difference from the king's coordinates
+        // If the bishop and king are on the same diagonal line then the difference of the coordinates is either: 0, 2x or -2x where x is the x-coordinate (y-coord would work fine as well)
+        // Since the lines become the like the linear functions y=x and y=-x
+        // If they do not share a line then return false
+        let origined_coord_difference = king_piece.0 - this_piece_coord.0 - king_piece.1 + this_piece_coord.1;
+        if !(origined_coord_difference == 0 || origined_coord_difference == 2 * this_piece_coord.0 || origined_coord_difference == -2 * origined_coord_difference)
+        {return false;}
+        
+        if precalculated_moves.is_none() {
+            let moves = self.get_bishop_moves(this_piece_coord, board);
+            return Piece::check_for_moves(king_piece, &moves);
+        }
+
+        Piece::check_for_moves(king_piece, precalculated_moves.unwrap())
+    }
+
+    fn rook_checking(&self, king_piece: &(i8, i8), this_piece_coord : &(i8, i8), precalculated_moves: Option<&Vec<String>>, board: &Board) -> bool {
+        // If king and rook don't share a file and rank, return false
+        if king_piece.0 != this_piece_coord.0 && king_piece.1 != this_piece_coord.1 {return false;}
+        
+        if precalculated_moves.is_none() {
+            let moves = self.get_rook_moves(this_piece_coord, board);
+            return Piece::check_for_moves(king_piece, &moves);
+        }
+
+        Piece::check_for_moves(king_piece, precalculated_moves.unwrap())
+    }
+
+    fn queen_checking(&self, king_piece: &(i8, i8), this_piece_coord : &(i8, i8), precalculated_moves: Option<&Vec<String>>, board: &Board) -> bool {
+        // Queen checks = Bishop checks OR Rook checks
+        self.rook_checking(king_piece, this_piece_coord, precalculated_moves, board) ||
+        self.bishop_checking(king_piece, this_piece_coord, precalculated_moves, board)
+    }
+
+    fn check_for_moves(king_piece: &(i8, i8), moves: &Vec<String>) -> bool {
+        let str_coord = Board::convert_coord_pos(king_piece);
+        for _move in moves {
+            println!("{} = {} : {}", *_move, str_coord, *_move == str_coord);
+            if *_move == str_coord {return true;}
+        }
+        false
     }
 }

@@ -1,4 +1,5 @@
 use super::piece::*;
+use super::piece_data::*;
 
 /// Macro used to create a piece using u8.
 /// Mainly used to save space when creating the main default board in Board::new method
@@ -60,6 +61,7 @@ impl Board {
         coords
     }
 
+    /// Converts numerical coordinates to string "<File><Rank>"" format
     pub fn convert_coord_pos(coords: &(i8, i8)) -> String {
         let mut string_coords = String::with_capacity(2);
 
@@ -69,17 +71,68 @@ impl Board {
         string_coords
     }
 
-    pub fn piece_at(&self, coords: &(i8, i8)) -> &Piece {
-        &self.0[coords.1 as usize][coords.0 as usize]
+    /// Returns a reference to the piece at a given coordinate
+    pub fn piece_at(&self, coords: &(i8, i8)) -> Piece {
+        self.0[coords.1 as usize][coords.0 as usize]
     }
 
+    /// Get legal moves of the piece
     pub fn get_moves(&self, position: &String) -> Vec<String> {
         let coords = Board::convert_str_pos(position);
         self.piece_at(&coords).get_moves(&coords, &self)
     }
 
+    /// Coordinates within the board's coordinates
     pub fn within_bounds(coords: &(i8, i8)) -> bool {
         coords.0 <= 7 && coords.0 >= 0 &&
         coords.1 <= 7 && coords.1 >= 0 
+    }
+
+    /// Returns the coords of the king of a given colour
+    pub fn get_king(&self, colour: &Colour) -> (i8, i8) {
+        for row in 0..8 {
+            for col in 0..8 {
+                let coord : (i8, i8) = (row, col);
+                let piece = self.piece_at(&coord);
+                if piece.get_type() == PieceType::King && piece.get_colour() == *colour {
+                    return coord;
+                }
+            }
+        }
+
+        panic!()
+    }
+
+    /// Make a move that is legal
+    pub fn make_move(&mut self, from: String, to: String) {
+        let from = Board::convert_str_pos(&from);
+        let to = Board::convert_str_pos(&to);
+        let mut moved_piece = self.piece_at(&from);
+
+        // Set the en passant-able bitflag of all pawns who didn't get captured by en passant to 0
+        for row in 0..8 {
+            for col in 0..8 {
+                if self.0[row][col].0 & 0x20 == 0x20 {
+                    self.0[row][col].0 = self.0[row][col].0 & 0xdf;
+                }
+            }
+        }
+
+        // Set move bitflag to 0 by using 01111111 mask
+        moved_piece.0 = moved_piece.0 & 0xf7;
+
+        // If piece is a pawn and did a double-step then set the en passant flag on using the 00100000 mask
+        if moved_piece.get_type() == PieceType::Pawn && to.1 - from.1 == 2 {
+            moved_piece.0 = moved_piece.0 | 0x20;
+        }
+
+        self.0[to.1 as usize][to.0 as usize] = moved_piece;
+        self.0[from.1 as usize][from.0 as usize] = Piece::from_u8(0);
+    }
+
+
+    /// Change the type of the piece, used for promotion
+    pub fn change_piece_type(&mut self, at: String, piece_type: PieceType) {
+        self.piece_at(&Board::convert_str_pos(&at)).set_type(piece_type);
     }
 }

@@ -1,5 +1,7 @@
 pub mod chess;
-use chess::*;
+use chess::piece_data::Colour;
+use chess::piece_data::PieceType;
+use chess::board::Board;
 use std::fmt;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -16,31 +18,69 @@ pub enum GameState {
 
 pub struct Game {
     /* save board, active colour, ... */
-    board: board::Board,
-    active_colour: piece_data::Colour,
+    board: Board,
+    active_colour: Colour,
     state: GameState
 }
 
 impl Game {
     /// Initialises a new board with pieces.
     pub fn new() -> Game {
+
         Game {
             /* initialise board, set active colour to white, ... */
-            board: board::Board::new(),
-            active_colour: piece_data::Colour::White,
-            state: GameState::InProgress
+            board: Board::new(),
+            active_colour: Colour::White,
+            state: GameState::InProgress,
         }
     }
 
     /// If the current game state is InProgress and the move is legal, 
     /// move a piece and return the resulting state of the game.
     pub fn make_move(&mut self, _from: String, _to: String) -> Option<GameState> {
-        None // To be added
+        let moves = self.board.get_moves(&_from);
+        let mut is_legal_move = false;
+        let new_pos = Board::convert_str_pos(&_to);
+
+        for _move in moves {
+            if _move == _to {
+                is_legal_move = true;
+                break;
+            }
+        }
+
+        // If the move is legal then proceed normally else panic
+        if is_legal_move {
+            self.board.make_move(_from, _to);
+            self.active_colour = if self.active_colour == Colour::White {Colour::Black} else {Colour::White};
+
+            // Check if this moves puts the enemy at check and return GameState::Check if so.
+            if self.board.piece_at(&new_pos)
+                .checking_king(&self.board.get_king(&self.active_colour), &new_pos, None, &self.board) {
+                    return Some(GameState::Check);
+            }
+        }
+        else {
+            panic!()
+        }
+
+        Some(GameState::InProgress)
     }
 
     /// Set the piece type that a peasant becames following a promotion.
-    pub fn set_promotion(&mut self, _piece: String) -> () {
-        () // to be added
+    pub fn set_promotion(&mut self, _square: String, _piece: String)  {
+        if _piece.eq_ignore_ascii_case("queen") {
+            self.board.change_piece_type(_square, PieceType::Queen);
+        }
+        else if _piece.eq_ignore_ascii_case("knight") {
+            self.board.change_piece_type(_square, PieceType::Knight);
+        }
+        else if _piece.eq_ignore_ascii_case("rook") {
+            self.board.change_piece_type(_square, PieceType::Rook);
+        }
+        else if _piece.eq_ignore_ascii_case("bishop") {
+            self.board.change_piece_type(_square, PieceType::Bishop);
+        }
     }
 
     /// Get the current game state.
@@ -58,18 +98,6 @@ impl Game {
 }
 
 /// Implement print routine for Game.
-/// 
-/// Output example:
-/// |:----------------------:|
-/// | R  Kn B  K  Q  B  Kn R |
-/// | P  P  P  P  P  P  P  P |
-/// | *  *  *  *  *  *  *  * |
-/// | *  *  *  *  *  *  *  * |
-/// | *  *  *  *  *  *  *  * |
-/// | *  *  *  *  *  *  *  * |
-/// | P  P  P  P  P  P  P  P |
-/// | R  Kn B  K  Q  B  Kn R |
-/// |:----------------------:|
 impl fmt::Debug for Game {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut board_str = String::with_capacity(800);
@@ -91,37 +119,5 @@ impl fmt::Debug for Game {
     }
 }
 
-// --------------------------
-// ######### TESTS ##########
-// --------------------------
-
 #[cfg(test)]
-mod tests {
-    use super::Game;
-    use super::GameState;
-
-    // check test framework
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-
-    // example test
-    // check that game state is in progress after initialisation
-    #[test]
-    fn game_in_progress_after_init() {
-
-        let game = Game::new();
-
-        game.board.print_all();
-
-        assert_eq!(game.get_game_state(), GameState::InProgress);
-    }
-
-    #[test]
-    fn print_board() {
-        let game = Game::new();
-
-        println!("{:?}", game);
-    }
-}
+mod unit_tests;

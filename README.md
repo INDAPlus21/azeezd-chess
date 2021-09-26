@@ -33,10 +33,12 @@ Mask used:
 The next four bits, i.e (0000) 000 0 represent important attributes or data necessary for the piece. Here are all the uses:
 
 - For pawn: 1000 if the pawn still hasn't moved once, used for the double step
-- For pawn: 0100 if the pawn just did it's first move, used for en passant (NOT IMPLEMENTED YET)
+- For pawn: 0010 if the pawn is en passant-able, that is an enemy piece can capture it (UNDER TESTING)
 - For rook: 1000 if the rook hasn't moved once, used for castling (NOT IMPLEMENTED YET)
 - For king: 1000 if the king hasn't moved once, used for castling (NOT IMPLEMENTED YET)
 
 Mask used:
 - Binary: 10000000 or Hexadecimal: 0x80
-- Binary: 01000000 or Hexadecimal: 0x40
+- Binary: 01111111 or Hexadecimal: 0x7f
+- Binary: 00100000 or Hexadecimal: 0x40
+- Binary: 11011111 or Hexadecimal: 0xdf
