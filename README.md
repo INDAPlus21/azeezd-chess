@@ -29,7 +29,7 @@ leaving the 111 unused.
 Mask used:
 - Decimal: 14 or Binary: 000011100
 
-### Bit flags, the 4th to 8th bits
+### Bit flags, the 4th to 7th bits
 The next four bits, i.e (0000) 000 0 represent important attributes or data necessary for the piece. Here are all the uses:
 
 - For pawn: 1000 if the pawn still hasn't moved once, used for the double step
