@@ -33,40 +33,34 @@ fn print_board() {
 fn fools_mate() {
     let mut game = Game::new();
 
-    game.state = game.make_move(String::from("e2"), String::from("e4")).unwrap();
-    println!("{:?}\n{:?}", game, game.state);
-
-    game.state = game.make_move(String::from("e7"), String::from("e5")).unwrap();
-    println!("{:?}\n{:?}", game, game.state);
-
-    game.state = game.make_move(String::from("f1"), String::from("c4")).unwrap();
-    println!("{:?}\n{:?}", game, game.state);
-
-    game.state = game.make_move(String::from("b8"), String::from("c6")).unwrap();
-    println!("{:?}\n{:?}", game, game.state);
-
-    game.state = game.make_move(String::from("d1"), String::from("h5")).unwrap();
-    println!("{:?}\n{:?}", game, game.state);
-
-    game.state = game.make_move(String::from("g8"), String::from("f6")).unwrap();
-    println!("{:?}\n{:?}", game, game.state);
-
-    game.state = game.make_move(String::from("h5"), String::from("f7")).unwrap();
-    println!("{:?}\n{:?}", game, game.state);
+    game.then("e2","e4")
+        .then("e7","e5")
+        .then("f1","c4")
+        .then("b8","c6")
+        .then("d1","h5")
+        .then("g8","f6")
+        .then("h5","f7");
 }
 
 #[test]
 fn en_passanting() {
     let mut game = Game::new();
 
-    game.state = game.make_move(String::from("e2"), String::from("e4")).unwrap();
-    println!("{:?}", game);
-    game.state = game.make_move(String::from("e7"), String::from("e6")).unwrap();
-    println!("{:?}", game);
-    game.state = game.make_move(String::from("e4"), String::from("e5")).unwrap();
-    println!("{:?}", game);
-    game.state = game.make_move(String::from("d7"), String::from("d5")).unwrap();
-    println!("{:?}", game);
-    game.state = game.make_move(String::from("e5"), String::from("d6")).unwrap();
-    println!("{:?}", game);
+    game.then("e2", "e4")
+        .then("e7", "e6")
+        .then("e4", "e5")
+        .then("d7", "d5")
+        .then("e5", "d6");
+}
+
+#[test]
+fn move_that_checks_own_king() {
+    let mut game = Game::new();
+
+    game.then("e2", "e4")
+        .then("e7", "e6")
+        .then("e4", "e5")
+        .then("f8", "b4");
+
+    println!("Possible moves for d2: {:?}", game.get_possible_moves(String::from("d2")).unwrap());
 }

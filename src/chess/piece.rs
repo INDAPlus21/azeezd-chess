@@ -153,7 +153,7 @@ impl Piece {
         let checked_coord = (position.0, position.1 + move_vector);
         if Board::within_bounds(&checked_coord) && board.piece_at(&checked_coord).is_empty()
         {
-            moves.push(Board::convert_coord_pos(&checked_coord));
+            self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
         }
 
         // If the first move bit flag is on then check and add the two-step pawn move
@@ -162,7 +162,7 @@ impl Piece {
                 let checked_coord = (position.0, position.1 + move_vector * 2);
                 if board.piece_at(&checked_coord).is_empty()
                 {
-                    moves.push(Board::convert_coord_pos(&checked_coord));
+                    self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
                 }
             }
         }
@@ -173,7 +173,7 @@ impl Piece {
            !board.piece_at(&checked_coord).is_empty() &&
            board.piece_at(&checked_coord).get_colour() != colour
         {
-            moves.push(Board::convert_coord_pos(&checked_coord));
+            self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
         }
 
         // Check for possible attacks on the left side
@@ -182,7 +182,7 @@ impl Piece {
            !board.piece_at(&checked_coord).is_empty() &&
            board.piece_at(&checked_coord).get_colour() != colour
         {
-            moves.push(Board::convert_coord_pos(&checked_coord));
+            self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
         }
 
         // Check if pawn is in its fifth rank for en passant
@@ -195,7 +195,7 @@ impl Piece {
                    && board.piece_at(&en_passanting_piece).0 & 0x20 == 0x20
                    && board.piece_at(&checked_coord).is_empty()
                 {
-                    moves.push(Board::convert_coord_pos(&checked_coord));
+                    self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
                 }
             }
         }
@@ -224,7 +224,7 @@ impl Piece {
                     board.piece_at(&checked_coord).is_empty() ||
                     board.piece_at(&checked_coord).get_colour() != colour)
                     {
-                        moves.push(Board::convert_coord_pos(&checked_coord));
+                        self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
                     } 
                 }
             }
@@ -250,11 +250,11 @@ impl Piece {
                     if Board::within_bounds(&checked_coord) {
                         let current_square = board.piece_at(&checked_coord);
                         if current_square.is_empty() { // If the square being checked is empty add to legal moves
-                            moves.push(Board::convert_coord_pos(&checked_coord));
+                            self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
                         }
                         else { // Reached a non-empty square!
                             if current_square.get_colour() != colour { // If opposite colour, add to legal moves (i.e can attack opponent)
-                                moves.push(Board::convert_coord_pos(&checked_coord));
+                                self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
                             }
                             break; // When reaching the non-empty square, break and go to next diagonal direction (if any left)
                         }
@@ -291,11 +291,11 @@ impl Piece {
                     if Board::within_bounds(&checked_coord) {
                         let current_square = board.piece_at(&checked_coord);
                         if current_square.is_empty() { // If the square being checked is empty add to legal moves
-                            moves.push(Board::convert_coord_pos(&checked_coord));
+                            self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
                         }
                         else { // Reached a non-empty square!
                             if current_square.get_colour() != colour { // If opposite colour, add to legal moves (i.e can attack opponent)
-                                moves.push(Board::convert_coord_pos(&checked_coord));
+                                self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
                             }
                             break; // When reaching the non-empty square, break and go to next diagonal direction (if any left)
                         }
@@ -333,7 +333,7 @@ impl Piece {
                    !board.piece_at(&checked_coord).is_empty() &&
                    board.piece_at(&checked_coord).get_colour() != colour
                 {
-                    moves.push(Board::convert_coord_pos(&checked_coord));
+                    self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
                 } 
             }
         }
@@ -423,9 +423,26 @@ impl Piece {
     fn check_for_moves(king_piece: &(i8, i8), moves: &Vec<String>) -> bool {
         let str_coord = Board::convert_coord_pos(king_piece);
         for _move in moves {
-            println!("{} = {} : {}", *_move, str_coord, *_move == str_coord);
             if *_move == str_coord {return true;}
         }
         false
+    }
+
+    fn add_move_if_legal(&self, moves_vec: &mut Vec<String>, from: &(i8, i8), to: &(i8, i8), board: Board) {
+        let mut new_board = board;
+        new_board.make_move(Board::convert_coord_pos(from),Board::convert_coord_pos(to));
+        let king = new_board.get_king(&self.get_colour());
+        let colour = self.get_colour();
+
+        for row in 0..8 {
+            for square in 0..8 {
+                let current_piece = new_board.piece_at(&(row, square));
+                if !current_piece.is_empty() && current_piece.get_colour() != colour && current_piece.checking_king(&king, &(row, square), None, &new_board) {
+                    return;
+                }
+            }
+        }
+
+        moves_vec.push(Board::convert_coord_pos(to));
     }
 }

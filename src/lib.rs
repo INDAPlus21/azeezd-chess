@@ -95,6 +95,13 @@ impl Game {
     pub fn get_possible_moves(&self, _position: String) -> Option<Vec<String>> {
         Some(self.board.get_moves(&_position))
     }
+
+    pub fn then(&mut self, from: &str, to: &str) -> &mut Game {
+        self.state = self.make_move(String::from(from), String::from(to)).unwrap();
+        println!("{:?}", self);
+        println!("{:?}", self.state);
+        self
+    }
 }
 
 /// Implement print routine for Game.

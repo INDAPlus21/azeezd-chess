@@ -8,6 +8,7 @@ macro_rules! n_p {
 }
 
 /// Represents a 8x8 board as a 8x8 array where every element is a Piece struct
+#[derive(Copy, Clone)]
 pub struct Board([[Piece; 8]; 8]);
 
 impl Board {
@@ -119,7 +120,7 @@ impl Board {
         }
 
         // Set move bitflag to 0 by using 01111111 mask
-        moved_piece.0 = moved_piece.0 & 0xf7;
+        moved_piece.0 = moved_piece.0 & 0x7f;
 
         // If piece is a pawn and did a double-step then set the en passant flag on using the 00100000 mask
         if moved_piece.get_type() == PieceType::Pawn && to.1 - from.1 == 2 {
@@ -129,7 +130,6 @@ impl Board {
         self.0[to.1 as usize][to.0 as usize] = moved_piece;
         self.0[from.1 as usize][from.0 as usize] = Piece::from_u8(0);
     }
-
 
     /// Change the type of the piece, used for promotion
     pub fn change_piece_type(&mut self, at: String, piece_type: PieceType) {
