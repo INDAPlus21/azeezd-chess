@@ -27,6 +27,19 @@ impl Board {
         ])
     }
 
+    pub fn new_empty() -> Board {
+        Board([
+            [n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x8D), n_p!(0x00), n_p!(0x00), n_p!(0x00)],
+            [n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00)],
+            [n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00)],
+            [n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00)],
+            [n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00)],
+            [n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00)],
+            [n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00)],
+            [n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x00), n_p!(0x8C), n_p!(0x00), n_p!(0x00), n_p!(0x00)]
+        ])
+    }
+
     /// Print the Piece as a string in format "<Colour> <Piece Type>" at the given position given in "<Rank><File>".
     pub fn print_at(&self, position: &String) -> String {
         let coords = Board::convert_str_pos(position);
@@ -123,8 +136,35 @@ impl Board {
         moved_piece.0 = moved_piece.0 & 0x7f;
 
         // If piece is a pawn and did a double-step then set the en passant flag on using the 00100000 mask
-        if moved_piece.get_type() == PieceType::Pawn && to.1 - from.1 == 2 {
+        if moved_piece.get_type() == PieceType::Pawn && to.1 - from.1 == 2 || from.1 - to.1 == 2 {
             moved_piece.0 = moved_piece.0 | 0x20;
+        }
+
+        // If move was en passant then kill the en passanted enemy
+        if moved_piece.get_type() == PieceType::Pawn && self.piece_at(&to).is_empty() && to.0 != from.0 && to.1 != from.1 {
+            println!("haha");
+            if moved_piece.get_colour() == Colour::White {
+                self.0[(to.1 + 1) as usize][to.0 as usize] = Piece::from_u8(0);
+            }
+            else {
+                self.0[(to.1 - 1) as usize][to.0 as usize] = Piece::from_u8(0);
+            }
+        }
+
+        // If a king moved two steps to left or right then it's castling
+        if moved_piece.get_type() == PieceType::King {
+            if to.0 - from.0 == 2 {
+                let mut rook = self.0[from.0 as usize][7];
+                rook.0 = rook.0 & 0x7f;
+                self.0[from.0 as usize][5] = rook;
+                self.0[from.0 as usize][7] = Piece::from_u8(0);
+            }
+            if from.0 - to.0 == 2 {
+                let mut rook = self.0[from.0 as usize][0];
+                rook.0 = rook.0 & 0x7f;
+                self.0[from.0 as usize][2] = rook;
+                self.0[from.0 as usize][0] = Piece::from_u8(0);
+            }
         }
 
         self.0[to.1 as usize][to.0 as usize] = moved_piece;
@@ -134,5 +174,28 @@ impl Board {
     /// Change the type of the piece, used for promotion
     pub fn change_piece_type(&mut self, at: String, piece_type: PieceType) {
         self.piece_at(&Board::convert_str_pos(&at)).set_type(piece_type);
+    }
+
+    pub fn king_in_check(&self, colour: &Colour) -> bool {
+        let king = self.get_king(colour);
+        let mut king_in_check = false;
+
+        for row in 0..8 {
+            for col in 0..8 {
+                let piece = self.0[row as usize][col as usize];
+                if piece.get_colour() != *colour {
+                    let coord : (i8, i8) = (row, col);
+                    king_in_check |= piece.checking_king(&king, &coord, None, self);
+                }
+            }
+        }
+
+        king_in_check
+    }
+
+    pub fn set_piece(&mut self, at: String, colour: Colour, piece_type: PieceType) {
+        let coord = Board::convert_str_pos(&at);
+
+        self.0[coord.0 as usize][coord.1 as usize] = Piece::new(colour, piece_type);
     }
 }

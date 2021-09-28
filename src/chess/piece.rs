@@ -109,7 +109,7 @@ impl Piece {
         }
     }
 
-    fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
@@ -338,6 +338,53 @@ impl Piece {
             }
         }
         
+
+        // Castling: Done by checking if king and rooks haven't moved before and king is not in check
+        // Then checking if the path the king takes is not threatened
+        if self.0 & 0x80 == 0x80 {
+            let rank = if colour == Colour::White {7} else {0};
+
+            if !board.king_in_check(&colour) {
+                if board.piece_at(&(rank, 7)).0 & 0x80 == 0x80 {
+                    let mut new_board = *board;
+                    let mut checked = false;
+
+                    for file_move in 0..2 {
+                        let new_pos = (rank, 5 + file_move);
+                        if new_board.piece_at(&new_pos).is_empty() {break;}
+                        new_board.make_move(Board::convert_coord_pos(&(rank, 4 + file_move)), Board::convert_coord_pos(&new_pos));
+                        if new_board.king_in_check(&colour) {
+                            checked = true;
+                            break;
+                        }
+                    }
+
+                    if !checked {
+                        moves.push(Board::convert_coord_pos(&(rank, 4 + 1)));
+                    }
+                }
+
+                if board.piece_at(&(rank, 0)).0 & 0x80 == 0x80 {
+                    let mut new_board = *board;
+                    let mut checked = false;
+
+                    for file_move in 0..4 {
+                        let new_pos = (rank, 5 + file_move);
+                        if new_board.piece_at(&new_pos).is_empty() {break;}
+                        new_board.make_move(Board::convert_coord_pos(&(rank, 4 - file_move)), Board::convert_coord_pos(&new_pos));
+                        if new_board.king_in_check(&colour) {
+                            checked = true;
+                            break;
+                        }
+                    }
+
+                    if !checked {
+                        moves.push(Board::convert_coord_pos(&(rank, 4 + 1)));
+                    }
+                }
+            }
+        }
+
         moves
     }
 

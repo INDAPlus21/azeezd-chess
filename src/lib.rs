@@ -35,6 +35,15 @@ impl Game {
         }
     }
 
+    pub fn new_empty() -> Game {
+        Game {
+            /* initialise board, set active colour to white, ... */
+            board: Board::new_empty(),
+            active_colour: Colour::White,
+            state: GameState::InProgress,
+        }
+    }
+
     /// If the current game state is InProgress and the move is legal, 
     /// move a piece and return the resulting state of the game.
     pub fn make_move(&mut self, _from: String, _to: String) -> Option<GameState> {
@@ -68,7 +77,10 @@ impl Game {
     }
 
     /// Set the piece type that a peasant becames following a promotion.
-    pub fn set_promotion(&mut self, _square: String, _piece: String)  {
+    pub fn set_promotion(&mut self, _square: String, _piece: String) {
+        let piece = self.board.piece_at(&Board::convert_str_pos(&_square));
+        let colour = piece.get_colour();
+
         if _piece.eq_ignore_ascii_case("queen") {
             self.board.change_piece_type(_square, PieceType::Queen);
         }
@@ -80,6 +92,10 @@ impl Game {
         }
         else if _piece.eq_ignore_ascii_case("bishop") {
             self.board.change_piece_type(_square, PieceType::Bishop);
+        }
+
+        if self.board.king_in_check(if colour == Colour::White {&Colour::Black} else {&Colour::White}) {
+            self.state = GameState::Check;
         }
     }
 
@@ -100,6 +116,25 @@ impl Game {
         self.state = self.make_move(String::from(from), String::from(to)).unwrap();
         println!("{:?}", self);
         println!("{:?}", self.state);
+        self
+    }
+
+    pub fn and_promote(&mut self, _at: &str, _piece: &str) -> &mut Game {
+        self.set_promotion(String::from(_at), String::from(_piece));
+        println!("{:?}", self);
+        println!("{:?}", self.state);
+        self
+    }
+    
+    pub fn and_add_at(&mut self, _at: &str, _colour: Colour, _piece_type: PieceType) -> &mut Game {
+        self.board.set_piece(String::from(_at), _colour, _piece_type);
+
+        self
+    }
+
+    pub fn and_remove_at(&mut self, _at: &str) -> &mut Game {
+        self.board.set_piece(String::from(_at), Colour::White, PieceType::None);
+
         self
     }
 }

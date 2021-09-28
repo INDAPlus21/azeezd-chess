@@ -62,5 +62,13 @@ fn move_that_checks_own_king() {
         .then("e4", "e5")
         .then("f8", "b4");
 
-    println!("Possible moves for d2: {:?}", game.get_possible_moves(String::from("d2")).unwrap());
+    assert_eq!(game.get_possible_moves(String::from("d2")).unwrap().len(), 0);
+}
+
+#[test]
+fn new_empty() {
+    let game = Game::new_empty();
+
+    println!("{:?}", game);
+
 }
