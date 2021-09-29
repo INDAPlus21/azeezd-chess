@@ -91,6 +91,13 @@ fn rook_moves() {
 }
 
 #[test]
+fn print_board() {
+    let game = Game::new();
+
+    println!("{:?}", game);
+}
+
+#[test]
 fn queen_moves_and_check() {
     let mut game = Game::new_empty();
 
@@ -105,17 +112,13 @@ fn queen_moves_and_check() {
     assert_eq!(game.get_possible_moves(String::from("f5")).unwrap(), vec!["e6", "d7", "c8", "g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e5", "d5",
                                                                           "c5", "b5", "a5", "g5", "h5", "f6", "f7", "f8", "f4", "f3", "f2", "f1"]);
 
-    game.then("f5", "e5");
+    game.then("f5", "f4");
 
-    assert_eq!(game.get_possible_moves(String::from("d4")).unwrap(), vec!["c6", "b6", "a6", "e6", "f6", "g6", "h6", "d7", "d8", "d5"]);
-    assert_eq!(game.get_possible_moves(String::from("e5")).unwrap(), vec!["c5", "b5", "a5", "e5", "f5", "g5", "h5", "d6", "d4", "d3", "d2", "d1"]);
-}
+    assert_eq!(game.get_possible_moves(String::from("d4")).unwrap(), vec!["c5", "b6", "a7", "e5", "f6", "g7", "h8", "c3", "b2", "a1", "e3", "f2", "g1", "c4", 
+                                                                          "b4", "a4", "e4", "f4", "d5", "d6", "d7", "d8", "d3", "d2", "d1"]);
 
-#[test]
-fn print_board() {
-    let game = Game::new();
-
-    println!("{:?}", game);
+    assert_eq!(game.get_possible_moves(String::from("f4")).unwrap(), vec!["e5", "d6", "c7", "b8", "g5", "h6", "e3", "d2", "c1", "g3", "h2", 
+                                                                           "e4", "d4", "g4", "h4", "f5", "f6", "f7", "f8", "f3", "f2", "f1"]);
 }
 
 #[test]
@@ -140,8 +143,9 @@ fn en_passanting() {
     game.then("e2", "e4")
         .then("e7", "e6")
         .then("e4", "e5")
-        .then("d7", "d5")
-        .then("e5", "d6");
+        .then("d7", "d5");
+
+    assert_eq!(game.get_possible_moves(String::from("e5")).unwrap(), vec!["d6"]);
 }
 
 #[test]
@@ -157,8 +161,15 @@ fn move_that_checks_own_king() {
 }
 
 #[test]
-fn new_empty() {
-    let game = Game::new_empty();
+fn castling() {
+    let mut game = Game::new();
+
+    game.and_remove_at("f1")
+        .and_remove_at("g1");
 
     println!("{:?}", game);
+
+    assert_eq!(game.get_possible_moves(String::from("e1")).unwrap(), vec!["f1", "g1"]);
+
+    game.then("e1", "g1");
 }

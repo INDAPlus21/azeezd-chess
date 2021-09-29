@@ -153,16 +153,16 @@ impl Board {
         // If a king moved two steps to left or right then it's castling
         if moved_piece.get_type() == PieceType::King {
             if to.0 - from.0 == 2 {
-                let mut rook = self.0[from.0 as usize][7];
+                let mut rook = self.0[to.1 as usize][7];
                 rook.0 = rook.0 & 0x7f;
-                self.0[from.0 as usize][5] = rook;
-                self.0[from.0 as usize][7] = Piece::from_u8(0);
+                self.0[to.1 as usize][5] = rook;
+                self.0[to.1 as usize][7] = Piece::from_u8(0);
             }
             if from.0 - to.0 == 2 {
-                let mut rook = self.0[from.0 as usize][0];
+                let mut rook = self.0[to.1 as usize][0];
                 rook.0 = rook.0 & 0x7f;
-                self.0[from.0 as usize][2] = rook;
-                self.0[from.0 as usize][0] = Piece::from_u8(0);
+                self.0[to.1 as usize][3] = rook;
+                self.0[to.1 as usize][0] = Piece::from_u8(0);
             }
         }
 

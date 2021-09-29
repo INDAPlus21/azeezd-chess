@@ -326,62 +326,78 @@ impl Piece {
         let mut moves : Vec<String> = Vec::with_capacity(4);
 
         // Check the 3x3 square around the king
-        for col in -1..2 {
-            for row in -1..2 {
+        for row in -1..2 {
+            for col in -1..2 {
                 let checked_coord = (position.0 + col, position.1 + row);
-                if Board::within_bounds(&checked_coord) && 
-                   !board.piece_at(&checked_coord).is_empty() &&
-                   board.piece_at(&checked_coord).get_colour() != colour
-                {
-                    self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
-                } 
+                if Board::within_bounds(&checked_coord) {
+                    if (!board.piece_at(&checked_coord).is_empty() &&
+                    board.piece_at(&checked_coord).get_colour() != colour) ||
+                    board.piece_at(&checked_coord).is_empty()
+                    {
+                        self.add_move_if_legal(&mut moves, position, &checked_coord, *board);
+                    }
+                }
             }
         }
         
 
         // Castling: Done by checking if king and rooks haven't moved before and king is not in check
         // Then checking if the path the king takes is not threatened
+
         if self.0 & 0x80 == 0x80 {
-            let rank = if colour == Colour::White {7} else {0};
+            let kings_rook = (7, position.1);
+            let queens_rook = (0, position.1);
 
             if !board.king_in_check(&colour) {
-                if board.piece_at(&(rank, 7)).0 & 0x80 == 0x80 {
+                // King side
+                if board.piece_at(&kings_rook).0 & 0x80 == 0x80 {
                     let mut new_board = *board;
                     let mut checked = false;
-
-                    for file_move in 0..2 {
-                        let new_pos = (rank, 5 + file_move);
-                        if new_board.piece_at(&new_pos).is_empty() {break;}
-                        new_board.make_move(Board::convert_coord_pos(&(rank, 4 + file_move)), Board::convert_coord_pos(&new_pos));
-                        if new_board.king_in_check(&colour) {
+                    for _move in 1..3 {
+                        let new_pos = (position.0 + _move, position.1);
+                        if new_board.piece_at(&new_pos).is_empty() {
+                            new_board.make_move(Board::convert_coord_pos(&position), Board::convert_coord_pos(&new_pos));
+                            if new_board.king_in_check(&colour) {
+                                checked = true;
+                                break;
+                            }
+                        }
+                        else {
                             checked = true;
                             break;
                         }
                     }
 
                     if !checked {
-                        moves.push(Board::convert_coord_pos(&(rank, 4 + 1)));
+                        moves.push(Board::convert_coord_pos(&(position.0 + 2, position.1)));
                     }
                 }
 
-                if board.piece_at(&(rank, 0)).0 & 0x80 == 0x80 {
+                // Queen side
+                if board.piece_at(&queens_rook).0 & 0x80 == 0x80 {
                     let mut new_board = *board;
                     let mut checked = false;
 
-                    for file_move in 0..4 {
-                        let new_pos = (rank, 5 + file_move);
-                        if new_board.piece_at(&new_pos).is_empty() {break;}
-                        new_board.make_move(Board::convert_coord_pos(&(rank, 4 - file_move)), Board::convert_coord_pos(&new_pos));
-                        if new_board.king_in_check(&colour) {
+                    for _move in 1..4 {
+                        let new_pos = (position.0 - _move, position.1);
+                        if new_board.piece_at(&new_pos).is_empty() {
+                            new_board.make_move(Board::convert_coord_pos(&position), Board::convert_coord_pos(&new_pos));
+                            if new_board.king_in_check(&colour) {
+                                checked = true;
+                                break;
+                            }
+                        }
+                        else {
                             checked = true;
                             break;
                         }
                     }
 
                     if !checked {
-                        moves.push(Board::convert_coord_pos(&(rank, 4 + 1)));
+                        moves.push(Board::convert_coord_pos(&(position.0 - 2, position.1)));
                     }
                 }
+
             }
         }
 
@@ -480,9 +496,8 @@ impl Piece {
         let colour = self.get_colour();
         let enemy_king = board.get_king(if colour == Colour::White {&Colour::Black} else {&Colour::White});
 
-        if *to == enemy_king && 1 == 0
+        if *to == enemy_king
         {
-            println!("{:?} -> {:?}: {:?}", Board::convert_coord_pos(from), Board::convert_coord_pos(to), moves_vec);
             moves_vec.push(Board::convert_coord_pos(to));
             return;
         }
