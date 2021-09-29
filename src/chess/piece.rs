@@ -476,10 +476,21 @@ impl Piece {
     }
 
     fn add_move_if_legal(&self, moves_vec: &mut Vec<String>, from: &(i8, i8), to: &(i8, i8), board: Board) {
+        
+        let colour = self.get_colour();
+        let enemy_king = board.get_king(if colour == Colour::White {&Colour::Black} else {&Colour::White});
+
+        if *to == enemy_king && 1 == 0
+        {
+            println!("{:?} -> {:?}: {:?}", Board::convert_coord_pos(from), Board::convert_coord_pos(to), moves_vec);
+            moves_vec.push(Board::convert_coord_pos(to));
+            return;
+        }
+
+
         let mut new_board = board;
         new_board.make_move(Board::convert_coord_pos(from),Board::convert_coord_pos(to));
-        let king = new_board.get_king(&self.get_colour());
-        let colour = self.get_colour();
+        let king = new_board.get_king(&colour);
 
         for row in 0..8 {
             for square in 0..8 {

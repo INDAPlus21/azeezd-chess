@@ -142,7 +142,6 @@ impl Board {
 
         // If move was en passant then kill the en passanted enemy
         if moved_piece.get_type() == PieceType::Pawn && self.piece_at(&to).is_empty() && to.0 != from.0 && to.1 != from.1 {
-            println!("haha");
             if moved_piece.get_colour() == Colour::White {
                 self.0[(to.1 + 1) as usize][to.0 as usize] = Piece::from_u8(0);
             }
@@ -196,6 +195,6 @@ impl Board {
     pub fn set_piece(&mut self, at: String, colour: Colour, piece_type: PieceType) {
         let coord = Board::convert_str_pos(&at);
 
-        self.0[coord.0 as usize][coord.1 as usize] = Piece::new(colour, piece_type);
+        self.0[coord.1 as usize][coord.0 as usize] = Piece::new(colour, piece_type);
     }
 }
