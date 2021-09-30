@@ -173,3 +173,21 @@ fn castling() {
 
     game.then("e1", "g1");
 }
+
+#[test]
+fn promotion_and_check() {
+    let mut game = Game::new_empty();
+
+    game.and_add_at("a7", Colour::White, PieceType::Pawn);
+
+    println!("{:?}", game);
+
+    assert_eq!(game.get_possible_moves(String::from("a7")).unwrap(), vec!["a8"]);
+
+    game.then("a7", "a8")
+        .and_promote("a8", "queen");
+
+    assert_eq!(game.get_possible_moves(String::from("a8")).unwrap(), vec!["b7", "c6", "d5", "e4", "f3", "g2", "h1", "b8", "c8", 
+                                                                          "d8", "e8", "a7", "a6", "a5", "a4", "a3", "a2", "a1"]);
+    assert_eq!(game.get_game_state(), GameState::Check);
+}

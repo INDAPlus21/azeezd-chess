@@ -172,7 +172,8 @@ impl Board {
 
     /// Change the type of the piece, used for promotion
     pub fn change_piece_type(&mut self, at: String, piece_type: PieceType) {
-        self.piece_at(&Board::convert_str_pos(&at)).set_type(piece_type);
+        let position = Board::convert_str_pos(&at);
+        self.0[position.1 as usize][position.0 as usize] = self.piece_at(&position).set_type(piece_type);
     }
 
     pub fn king_in_check(&self, colour: &Colour) -> bool {

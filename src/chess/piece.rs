@@ -93,7 +93,7 @@ impl Piece {
         }
     }
 
-    pub fn set_type(&mut self, piece_type: PieceType) {
+    pub fn set_type(&mut self, piece_type: PieceType) -> Piece {
         // Gets a typeless piece by setting its type bits to 000 by using the mask 111100011 (f1 in HEX)
         let masked = self.0 & 0xf1;
 
@@ -107,6 +107,8 @@ impl Piece {
             PieceType::Queen => {self.0 = masked | 10}
             PieceType::King => {self.0 = masked | 12}
         }
+
+        *self
     }
 
     pub fn is_empty(&self) -> bool {

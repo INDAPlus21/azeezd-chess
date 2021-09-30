@@ -123,6 +123,7 @@ impl Game {
         let piece = self.board.piece_at(&Board::convert_str_pos(&_square));
         let colour = piece.get_colour();
 
+
         if _piece.eq_ignore_ascii_case("queen") {
             self.board.change_piece_type(_square, PieceType::Queen);
         }
