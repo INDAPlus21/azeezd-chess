@@ -169,7 +169,7 @@ impl Game {
         Some(self.board.get_moves(&_position))
     }
 
-    /// ## DEBUG METHOD: `then`
+    /// ## DEBUG METHOD: `_then`
     /// Takes two string literals to make a move and return the Game. This method is used for method chaining and debugging in unit tests
     /// ### Parameters:
     /// - `_from: &str`: The square which the moving piece is at.
@@ -181,14 +181,14 @@ impl Game {
     /// &mut Game
     /// `
     /// after the move
-    pub fn then(&mut self, _from: &str, _to: &str) -> &mut Game {
+    fn _then(&mut self, _from: &str, _to: &str) -> &mut Game {
         self.state = self.make_move(String::from(_from), String::from(_to)).unwrap();
         println!("{:?}", self);
         println!("{:?}", self.state);
         self
     }
 
-    /// ## DEBUG METHOD: `and_promote`
+    /// ## DEBUG METHOD: `_and_promote`
     /// Takes a string literal for square position and another for piece type to promote a piece at a given square. This method is used for method chaining and debugging in unit tests
     /// ### Parameters:
     /// - `_from: &str`: The square which the promoted piece is at.
@@ -206,14 +206,14 @@ impl Game {
     /// - `"knight"`: promotes to a knight
     /// - `"rook"`: promotes to a rook
     /// - `"bishop"`: promotes to a bishop
-    pub fn and_promote(&mut self, _at: &str, _piece: &str) -> &mut Game {
+    fn _and_promote(&mut self, _at: &str, _piece: &str) -> &mut Game {
         self.set_promotion(String::from(_at), String::from(_piece));
         println!("{:?}", self);
         println!("{:?}", self.state);
         self
     }
     
-    /// ## DEBUG METHOD: `and_add_at`
+    /// ## DEBUG METHOD: `_and_add_at`
     /// Takes a string literal for square position and a `Colour` and `PieceType` enums to add a piece (from outside the game) at the given square. This method is used for method chaining and debugging in unit tests
     /// ### Parameters:
     /// - `_at: &str`: The square which the added piece will be at.
@@ -226,13 +226,13 @@ impl Game {
     /// &mut Game
     /// `
     /// after the addition
-    pub fn and_add_at(&mut self, _at: &str, _colour: Colour, _piece_type: PieceType) -> &mut Game {
+    fn _and_add_at(&mut self, _at: &str, _colour: Colour, _piece_type: PieceType) -> &mut Game {
         self.board.set_piece(String::from(_at), _colour, _piece_type);
 
         self
     }
 
-    /// ## DEBUG METHOD: `and_remove_at`
+    /// ## DEBUG METHOD: `_and_remove_at`
     /// Takes a string literal for square position removes any piece that is there. This method is used for method chaining and debugging in unit tests
     /// ### Parameters:
     /// - `_at: &str`: The square which the removed piece is at
@@ -243,7 +243,7 @@ impl Game {
     /// &mut Game
     /// `
     /// after the removal
-    pub fn and_remove_at(&mut self, _at: &str) -> &mut Game {
+    fn _and_remove_at(&mut self, _at: &str) -> &mut Game {
         self.board.set_piece(String::from(_at), Colour::White, PieceType::None);
 
         self
