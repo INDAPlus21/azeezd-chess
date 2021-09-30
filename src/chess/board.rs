@@ -183,7 +183,7 @@ impl Board {
         for row in 0..8 {
             for col in 0..8 {
                 let piece = self.0[row as usize][col as usize];
-                if piece.get_colour() != *colour {
+                if piece.get_colour() != *colour && piece.get_type() != PieceType::King {
                     let coord : (i8, i8) = (row, col);
                     king_in_check |= piece.checking_king(&king, &coord, None, self);
                 }

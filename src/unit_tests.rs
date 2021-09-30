@@ -191,3 +191,16 @@ fn promotion_and_check() {
                                                                           "d8", "e8", "a7", "a6", "a5", "a4", "a3", "a2", "a1"]);
     assert_eq!(game.get_game_state(), GameState::Check);
 }
+
+#[test]
+#[should_panic(expected = "Illegal Move!")]
+fn king_doing_illegal_move_during_checkmate() {
+    let mut game = Game::new_empty();
+
+    game.and_add_at("a7", Colour::White, PieceType::Queen)
+        .and_add_at("h7", Colour::White, PieceType::Rook);
+
+    game.then("a7", "e7")
+        .then("e8", "e7")
+        .then("h7", "e7"); // Should panic because Rook would kill him
+}

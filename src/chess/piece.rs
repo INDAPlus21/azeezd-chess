@@ -512,7 +512,7 @@ impl Piece {
         for row in 0..8 {
             for square in 0..8 {
                 let current_piece = new_board.piece_at(&(row, square));
-                if !current_piece.is_empty() && current_piece.get_colour() != colour && current_piece.checking_king(&king, &(row, square), None, &new_board) {
+                if !current_piece.is_empty() && current_piece.get_colour() != colour && current_piece.get_type() != PieceType::King && current_piece.checking_king(&king, &(row, square), None, &new_board) {
                     return;
                 }
             }

@@ -68,16 +68,16 @@ impl Game {
     /// 
     /// ### Returns
     /// Returns `Option<>` wrapping a `GameState`
-    /// ```rust
+    /// `
     /// Option<GameState>
-    /// ```
+    /// `
     /// with the current state of the game.
     /// 
     /// ### Panics!
     /// - If a move is illegal:
-    /// ```rust
+    /// `
     /// panic!("Illegal Move!")
-    /// ```
+    /// `
     pub fn make_move(&mut self, _from: String, _to: String) -> Option<GameState> {
         let moves = self.board.get_moves(&_from);
         let mut is_legal_move = false;
@@ -96,9 +96,12 @@ impl Game {
             self.active_colour = if self.active_colour == Colour::White {Colour::Black} else {Colour::White};
 
             // Check if this moves puts the enemy at check and return GameState::Check if so.
-            if self.board.piece_at(&new_pos)
-                .checking_king(&self.board.get_king(&self.active_colour), &new_pos, None, &self.board) {
+            if self.board.piece_at(&new_pos).checking_king(&self.board.get_king(&self.active_colour), &new_pos, None, &self.board) {
                     return Some(GameState::Check);
+            }
+
+            if self.board.piece_at(&new_pos).get_type() == PieceType::King {
+                return Some(GameState::GameOver);
             }
         }
         else {
@@ -158,9 +161,9 @@ impl Game {
     /// - `_position: String`: The position of the piece given as "\<File\>\<Rank\>".
     /// ### Return
     /// Returns an `Option<>` wrapping a `Vec<String>`
-    /// ```rust
+    /// `
     /// Option<Vec<String>>
-    /// ```
+    /// `
     /// Holding all legal possible moves of the given square
     pub fn get_possible_moves(&self, _position: String) -> Option<Vec<String>> {
         Some(self.board.get_moves(&_position))
@@ -174,9 +177,9 @@ impl Game {
     /// 
     /// ### Return
     /// Returns a mutable reference to current game
-    /// ```rust
+    /// `
     /// &mut Game
-    /// ```
+    /// `
     /// after the move
     pub fn then(&mut self, _from: &str, _to: &str) -> &mut Game {
         self.state = self.make_move(String::from(_from), String::from(_to)).unwrap();
@@ -193,9 +196,9 @@ impl Game {
     /// 
     /// ### Return
     /// Returns a mutable reference to current game
-    /// ```rust
+    /// `
     /// &mut Game
-    /// ```
+    /// `
     /// after the promotion
     /// 
     /// ### `_piece` formatting
@@ -219,9 +222,9 @@ impl Game {
     /// 
     /// ### Return
     /// Returns a mutable reference to current game
-    /// ```rust
+    /// `
     /// &mut Game
-    /// ```
+    /// `
     /// after the addition
     pub fn and_add_at(&mut self, _at: &str, _colour: Colour, _piece_type: PieceType) -> &mut Game {
         self.board.set_piece(String::from(_at), _colour, _piece_type);
@@ -236,9 +239,9 @@ impl Game {
     /// 
     /// ### Return
     /// Returns a mutable reference to current game
-    /// ```rust
+    /// `
     /// &mut Game
-    /// ```
+    /// `
     /// after the removal
     pub fn and_remove_at(&mut self, _at: &str) -> &mut Game {
         self.board.set_piece(String::from(_at), Colour::White, PieceType::None);
