@@ -16,6 +16,13 @@ pub enum GameState {
  * - Write well structured and clean code!
  */
 
+/// ## Game
+/// ### Type: `struct`
+/// Holds data neccessary for the game and handles the actual gameplay of chess.
+/// ### Members:
+/// - `board`: Representation of te board
+/// - `Colour`: The current player's colour
+/// - `GameState`: The state of the game, `InProgress`, `Check` or `GameOver`
 pub struct Game {
     /* save board, active colour, ... */
     board: Board,
@@ -24,7 +31,11 @@ pub struct Game {
 }
 
 impl Game {
-    /// Initialises a new board with pieces.
+    /// ## `new`
+    /// Returns a new instance of the `Game` struct with the standard default values for chess.
+    /// - Standard starting board
+    /// - Active Colour: White
+    /// - Game State: `InProgress`
     pub fn new() -> Game {
 
         Game {
@@ -35,6 +46,11 @@ impl Game {
         }
     }
 
+    /// ## DEBUG METHOD: `new_empty`
+    /// Creates an empty board with two kings each at their starting square, e1 and e8.
+    /// - Empty Board with only two kings
+    /// - Active Colour: White
+    /// - Game State: `InProgress`
     pub fn new_empty() -> Game {
         Game {
             /* initialise board, set active colour to white, ... */
@@ -44,8 +60,24 @@ impl Game {
         }
     }
 
-    /// If the current game state is InProgress and the move is legal, 
-    /// move a piece and return the resulting state of the game.
+    /// ## `make_move`
+    /// Takes squares and changes the position of the piece at the first to the second, checking for legality. If the move is illegal it panics.
+    /// ### Parameters
+    /// - `_from: String`: The square the piece to be moved is at given as "\<File\>\<Rank\>"
+    /// - `_to: String`: The square the piece to be moved will be given as "\<File\>\<Rank\>"
+    /// 
+    /// ### Returns
+    /// Returns `Option<>` wrapping a `GameState`
+    /// ```rust
+    /// Option<GameState>
+    /// ```
+    /// with the current state of the game.
+    /// 
+    /// ### Panics!
+    /// - If a move is illegal:
+    /// ```rust
+    /// panic!("Illegal Move!")
+    /// ```
     pub fn make_move(&mut self, _from: String, _to: String) -> Option<GameState> {
         let moves = self.board.get_moves(&_from);
         let mut is_legal_move = false;
@@ -70,13 +102,23 @@ impl Game {
             }
         }
         else {
-            panic!()
+            panic!("Illegal Move!")
         }
 
         Some(GameState::InProgress)
     }
 
-    /// Set the piece type that a peasant becames following a promotion.
+    /// ## `set_promotion`
+    /// Takes a square position and a piece type name and promotes that piece at the square to the given piece type.
+    /// ### Parameters
+    /// - `_square: String`: The position of the piece given as "\<File\>\<Rank\>"
+    /// - `_piece: String`: The type of the piece to promote to. Read below for accepted input
+    /// 
+    /// ### `_piece` formatting
+    /// - `"queen"`: promotes to a queen
+    /// - `"knight"`: promotes to a knight
+    /// - `"rook"`: promotes to a rook
+    /// - `"bishop"`: promotes to a bishop
     pub fn set_promotion(&mut self, _square: String, _piece: String) {
         let piece = self.board.piece_at(&Board::convert_str_pos(&_square));
         let colour = piece.get_colour();
@@ -99,26 +141,67 @@ impl Game {
         }
     }
 
-    /// Get the current game state.
+    /// ## get_game_state
+    /// Returns the current state of the game
+    /// ### Return
+    /// - `GamneState::InProgress`: Game is still on!
+    /// - `GamneState::Check`: Some king is in check!
+    /// - `GamneState::GameOver`: A king is dead!
     pub fn get_game_state(&self) -> GameState {
         self.state
     }
     
-    /// If a piece is standing on the given tile, return all possible 
-    /// new positions of that piece. Don't forget to the rules for check. 
-    /// 
-    /// (optional) Don't forget to include en passent and castling.
+    /// ## `get_possible_moves`
+    /// Takes a square position and returns all possible legal moves of the piece at that square
+    /// ### Parameters
+    /// - `_position: String`: The position of the piece given as "\<File\>\<Rank\>".
+    /// ### Return
+    /// Returns an `Option<>` wrapping a `Vec<String>`
+    /// ```rust
+    /// Option<Vec<String>>
+    /// ```
+    /// Holding all legal possible moves of the given square
     pub fn get_possible_moves(&self, _position: String) -> Option<Vec<String>> {
         Some(self.board.get_moves(&_position))
     }
 
-    pub fn then(&mut self, from: &str, to: &str) -> &mut Game {
-        self.state = self.make_move(String::from(from), String::from(to)).unwrap();
+    /// ## DEBUG METHOD: `then`
+    /// Takes two string literals to make a move and return the Game. This method is used for method chaining and debugging in unit tests
+    /// ### Parameters:
+    /// - `_from: &str`: The square which the moving piece is at.
+    /// - `_to: &str`: The square to which the moving piece will move.
+    /// 
+    /// ### Return
+    /// Returns a mutable reference to current game
+    /// ```rust
+    /// &mut Game
+    /// ```
+    /// after the move
+    pub fn then(&mut self, _from: &str, _to: &str) -> &mut Game {
+        self.state = self.make_move(String::from(_from), String::from(_to)).unwrap();
         println!("{:?}", self);
         println!("{:?}", self.state);
         self
     }
 
+    /// ## DEBUG METHOD: `and_promote`
+    /// Takes a string literal for square position and another for piece type to promote a piece at a given square. This method is used for method chaining and debugging in unit tests
+    /// ### Parameters:
+    /// - `_from: &str`: The square which the promoted piece is at.
+    /// - `_piece: &str`: The type of the piece to promote to. Read below for formatting
+    /// 
+    /// ### Return
+    /// Returns a mutable reference to current game
+    /// ```rust
+    /// &mut Game
+    /// ```
+    /// after the promotion
+    /// 
+    /// ### `_piece` formatting
+    /// - `"queen"`: promotes to a queen
+    /// - `"knight"`: promotes to a knight
+    /// - `"rook"`: promotes to a rook
+    /// - `"bishop"`: promotes to a bishop
     pub fn and_promote(&mut self, _at: &str, _piece: &str) -> &mut Game {
         self.set_promotion(String::from(_at), String::from(_piece));
         println!("{:?}", self);
@@ -126,12 +209,36 @@ impl Game {
         self
     }
     
+    /// ## DEBUG METHOD: `and_add_at`
+    /// Takes a string literal for square position and a `Colour` and `PieceType` enums to add a piece (from outside the game) at the given square. This method is used for method chaining and debugging in unit tests
+    /// ### Parameters:
+    /// - `_at: &str`: The square which the added piece will be at.
+    /// - `_colour: Colour`: The colour of the piece that will be added
+    /// - `_piece_type: PieceType`: The type of the piece that will be added
+    /// 
+    /// ### Return
+    /// Returns a mutable reference to current game
+    /// ```rust
+    /// &mut Game
+    /// ```
+    /// after the addition
     pub fn and_add_at(&mut self, _at: &str, _colour: Colour, _piece_type: PieceType) -> &mut Game {
         self.board.set_piece(String::from(_at), _colour, _piece_type);
 
         self
     }
 
+    /// ## DEBUG METHOD: `and_remove_at`
+    /// Takes a string literal for square position removes any piece that is there. This method is used for method chaining and debugging in unit tests
+    /// ### Parameters:
+    /// - `_at: &str`: The square which the removed piece is at
+    /// 
+    /// ### Return
+    /// Returns a mutable reference to current game
+    /// ```rust
+    /// &mut Game
+    /// ```
+    /// after the removal
     pub fn and_remove_at(&mut self, _at: &str) -> &mut Game {
         self.board.set_piece(String::from(_at), Colour::White, PieceType::None);
 
