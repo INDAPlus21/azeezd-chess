@@ -1,6 +1,6 @@
 # Chess Engine
 
-### (!!!) The source code, probably, is filled with bugs for this code is not only spaghetti, it is a whole italian restaurant. So prepare your Mamma Mia's.
+### (!!!) Expect some spaghetti, so prepare your Mamma Mia's!
 
 ## Pieces' Bit Representation
 The pieces are stored in the 
@@ -35,7 +35,7 @@ Mask used:
 The next four bits, i.e (0000) 000 0 represent important attributes or data necessary for the piece. Here are all the uses:
 
 - For pawn: 1000 if the pawn still hasn't moved once, used for the double step
-- For pawn: 0010 if the pawn is en passant-able, that is an enemy piece can capture it.
+- For pawn: 0010 if the pawn is en passant-able, that is an enemy piece can capture it (UNDER TESTING).
 - For rook: 1000 if the rook hasn't moved once, used for castling (UNDER TESTING)
 - For king: 1000 if the king hasn't moved once, used for castling (UNDER TESTING)
 

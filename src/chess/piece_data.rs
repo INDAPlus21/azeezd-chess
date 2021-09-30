@@ -1,5 +1,5 @@
 /// Pieces used in chess
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Copy, Clone)]
 pub enum PieceType {
     None,
     Pawn,
@@ -11,7 +11,7 @@ pub enum PieceType {
 }
 
 /// Colours of piece and of the current turn
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Copy, Clone)]
 pub enum Colour {
     White,
     Black

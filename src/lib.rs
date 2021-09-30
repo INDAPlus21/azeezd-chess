@@ -2,6 +2,7 @@ pub mod chess;
 use chess::piece_data::Colour;
 use chess::piece_data::PieceType;
 use chess::board::Board;
+use chess::piece::*;
 use std::fmt;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -79,33 +80,30 @@ impl Game {
     /// panic!("Illegal Move!")
     /// `
     pub fn make_move(&mut self, _from: String, _to: String) -> Option<GameState> {
-        let moves = self.board.get_moves(&_from);
-        let mut is_legal_move = false;
-        let new_pos = Board::convert_str_pos(&_to);
+        let mut possible_en_passant = false;
+        if self.board.piece_at(Board::filerank_to_num(&_from)).get_type() == PieceType::Pawn {
+            let _from = Board::filerank_to_num(&_from);
+            let _to = Board::filerank_to_num(&_to);
 
-        for _move in moves {
-            if _move == _to {
-                is_legal_move = true;
-                break;
+            if self.board.is_empty(_to) && _to.0 != _from.0 && _to.1 != _from.0 {
+                possible_en_passant = true;
             }
         }
 
-        // If the move is legal then proceed normally else panic
-        if is_legal_move {
-            self.board.make_move(_from, _to);
-            self.active_colour = if self.active_colour == Colour::White {Colour::Black} else {Colour::White};
+        self.board.make_move(&_from, &_to);
 
-            // Check if this moves puts the enemy at check and return GameState::Check if so.
-            if self.board.piece_at(&new_pos).checking_king(&self.board.get_king(&self.active_colour), &new_pos, None, &self.board) {
-                    return Some(GameState::Check);
-            }
+        self.active_colour = if self.active_colour == Colour::Black {Colour::White} else {Colour::Black};
 
-            if self.board.piece_at(&new_pos).get_type() == PieceType::King {
-                return Some(GameState::GameOver);
+        if possible_en_passant {
+            let _from = Board::filerank_to_num(&_from);
+            let _to = Board::filerank_to_num(&_to);
+            if self.board.piece_at((_to.0, _to.1 )).get_type() == PieceType::Pawn {
+
             }
         }
-        else {
-            panic!("Illegal Move!")
+
+        if Board::king_in_check(&mut self.board, self.active_colour) {
+            return Some(GameState::Check);
         }
 
         Some(GameState::InProgress)
@@ -123,24 +121,24 @@ impl Game {
     /// - `"rook"`: promotes to a rook
     /// - `"bishop"`: promotes to a bishop
     pub fn set_promotion(&mut self, _square: String, _piece: String) {
-        let piece = self.board.piece_at(&Board::convert_str_pos(&_square));
+        let piece = self.board.piece_at(Board::filerank_to_num(&_square));
         let colour = piece.get_colour();
 
 
         if _piece.eq_ignore_ascii_case("queen") {
-            self.board.change_piece_type(_square, PieceType::Queen);
+            self.board.mut_piece_at(Board::filerank_to_num(&String::from(_square))).set_type(PieceType::Queen)
         }
         else if _piece.eq_ignore_ascii_case("knight") {
-            self.board.change_piece_type(_square, PieceType::Knight);
+            self.board.mut_piece_at(Board::filerank_to_num(&String::from(_square))).set_type(PieceType::Knight)
         }
         else if _piece.eq_ignore_ascii_case("rook") {
-            self.board.change_piece_type(_square, PieceType::Rook);
+            self.board.mut_piece_at(Board::filerank_to_num(&String::from(_square))).set_type(PieceType::Rook)
         }
         else if _piece.eq_ignore_ascii_case("bishop") {
-            self.board.change_piece_type(_square, PieceType::Bishop);
+            self.board.mut_piece_at(Board::filerank_to_num(&String::from(_square))).set_type(PieceType::Bishop)
         }
 
-        if self.board.king_in_check(if colour == Colour::White {&Colour::Black} else {&Colour::White}) {
+        if Board::king_in_check(&mut self.board, if colour == Colour::White {Colour::Black} else {Colour::White}) {
             self.state = GameState::Check;
         }
     }
@@ -166,7 +164,7 @@ impl Game {
     /// `
     /// Holding all legal possible moves of the given square
     pub fn get_possible_moves(&self, _position: String) -> Option<Vec<String>> {
-        Some(self.board.get_moves(&_position))
+        Some(self.board.get_legal_moves(&_position))
     }
 
     /// ## DEBUG METHOD: `_then`
@@ -227,8 +225,8 @@ impl Game {
     /// `
     /// after the addition
     fn _and_add_at(&mut self, _at: &str, _colour: Colour, _piece_type: PieceType) -> &mut Game {
-        self.board.set_piece(String::from(_at), _colour, _piece_type);
-
+        let coords = Board::filerank_to_num(&String::from(_at));
+        self.board.board[coords.1 as usize][coords.0 as usize] = Piece::new(_colour, _piece_type);
         self
     }
 
@@ -244,8 +242,8 @@ impl Game {
     /// `
     /// after the removal
     fn _and_remove_at(&mut self, _at: &str) -> &mut Game {
-        self.board.set_piece(String::from(_at), Colour::White, PieceType::None);
-
+        let coords = Board::filerank_to_num(&String::from(_at));
+        self.board.board[coords.1 as usize][coords.0 as usize] = Piece::from_u8(0x0);
         self
     }
 }
@@ -260,7 +258,7 @@ impl fmt::Debug for Game {
         for col in 0..8 {
             board_str.push_str("|  ");
             for row in 0..8 {
-                board_str.push(self.board.piece_at(&(row, col)).get_icon());
+                board_str.push(self.board.piece_at((row, col)).get_icon());
                 board_str.push_str("  ");
             }
             board_str.push_str("|\n");
