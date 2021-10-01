@@ -132,10 +132,12 @@ fn fools_mate() {
         ._then("d1","h5")
         ._then("g8","f6")
         ._then("h5","f7");
+
+    assert_eq!(game.get_game_state(), GameState::Check);
 }
 
-
-fn _en_passanting() {
+#[test]
+fn en_passanting() {
     let mut game = Game::new();
 
     game._then("e2", "e4")

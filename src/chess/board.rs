@@ -88,6 +88,20 @@ impl Board {
         let moves = self.get_legal_moves(&_from);
 
         if moves.contains(&_to) {
+            // Get moving piece
+            let mut piece = self.mut_piece_at(Board::filerank_to_num(_from));
+
+            // Set moving bitflag to 0 with 01111111 flag
+            piece.set_data(piece.as_u8() & 0x7f);
+
+            // If pawn does a double move, set en passant move to 1 using 00100000
+            if piece.get_type() == PieceType::Pawn
+            && (Board::filerank_to_num(_from).1 - Board::filerank_to_num(_to).1 == 2
+            || Board::filerank_to_num(_to).1 - Board::filerank_to_num(_from).1 == 2)
+            {
+                piece.set_data(piece.as_u8() | 0x20);
+            }
+
             self.make_pseudo_legal_move(Board::filerank_to_num(&_from), Board::filerank_to_num(&_to));
         }
         else {
