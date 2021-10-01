@@ -42,5 +42,4 @@ The next four bits, i.e (0000) 000 0 represent important attributes or data nece
 Mask used:
 - Binary: 10000000 or Hexadecimal: 0x80
 - Binary: 01111111 or Hexadecimal: 0x7f
-- Binary: 00100000 or Hexadecimal: 0x40
-- Binary: 11011111 or Hexadecimal: 0xdf
+- Binary: 00100000 or Hexadecimal: 0x20

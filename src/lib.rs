@@ -80,6 +80,11 @@ impl Game {
     /// panic!("Illegal Move!")
     /// `
     pub fn make_move(&mut self, _from: String, _to: String) -> Option<GameState> {
+        if self.board.piece_at(Board::filerank_to_num(&_from)).get_colour() != self.active_colour
+        || self.board.is_empty(Board::filerank_to_num(&_from))
+        { panic!("Incorrect square to move!") }
+
+
         let mut possible_en_passant = false;
         if self.board.piece_at(Board::filerank_to_num(&_from)).get_type() == PieceType::Pawn {
             let _from = Board::filerank_to_num(&_from);

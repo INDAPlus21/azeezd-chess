@@ -93,9 +93,13 @@ fn rook_moves() {
     let mut game = Game::new_empty();
 
     game._and_add_at("c6", Colour::Black, PieceType::Rook)
-        ._and_add_at("d5", Colour::White, PieceType::Rook);
+        ._and_add_at("a5", Colour::White, PieceType::Rook);
 
     println!("{:?}", game);
+
+    assert_eq!(game.get_possible_moves(String::from("a5")).unwrap(), vec!["b5", "c5", "d5", "e5", "f5", "g5", "h5", "a6", "a7", "a8", "a4", "a3", "a2", "a1"]);
+
+    game._then("a5", "d5");
 
     assert_eq!(game.get_possible_moves(String::from("c6")).unwrap(), vec!["b6", "a6", "d6", "e6", "f6", "g6", "h6", "c7", "c8", "c5", "c4", "c3", "c2", "c1"]);
     assert_eq!(game.get_possible_moves(String::from("d5")).unwrap(), vec!["c5", "b5", "a5", "e5", "f5", "g5", "h5", "d6", "d7", "d8", "d4", "d3", "d2", "d1"]);
@@ -117,10 +121,13 @@ fn print_board() {
 fn queen_moves_and_check() {
     let mut game = Game::new_empty();
 
-    game._and_add_at("d4", Colour::White, PieceType::Queen)
+    game._and_add_at("d1", Colour::White, PieceType::Queen)
         ._and_add_at("f5", Colour::Black, PieceType::Queen);
 
     println!("{:?}", game);
+
+    game._then("d1", "d4");
+
 
     assert_eq!(game.get_possible_moves(String::from("d4")).unwrap(), vec!["c5", "b6", "a7", "e5", "f6", "g7", "h8", "c3", "b2", "a1", "e3", "f2", "g1", 
                                                                           "c4", "b4", "a4", "e4", "f4", "g4", "h4", "d5", "d6", "d7", "d8", "d3", "d2", "d1"]);
@@ -135,6 +142,11 @@ fn queen_moves_and_check() {
 
     assert_eq!(game.get_possible_moves(String::from("f4")).unwrap(), vec!["e5", "d6", "c7", "b8", "g5", "h6", "e3", "d2", "c1", "g3", "h2", 
                                                                            "e4", "d4", "g4", "h4", "f5", "f6", "f7", "f8", "f3", "f2", "f1"]);
+
+    game._then("d4", "e4");
+
+    assert_eq!(game.get_game_state(), GameState::Check);
+    assert_eq!(game.get_possible_moves(String::from("f4")).unwrap(), vec!["e5", "e4"]);
 }
 
 #[test]
@@ -227,4 +239,16 @@ fn turn_checker(){
     assert_eq!(game.active_colour, Colour::White);
 
     // et cetera
+}
+
+#[test]
+#[should_panic(expected = "Incorrect square to move!")]
+fn turn_checker_panic_on_wrong(){
+    let mut game = Game::new();
+
+    // Start white
+    assert_eq!(game.active_colour, Colour::White);
+
+    // Black moves : should panic!
+    game.make_move(String::from("e7"), String::from("e6"));
 }
