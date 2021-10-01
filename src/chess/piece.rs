@@ -88,15 +88,29 @@ impl Piece {
         self.0
     }
 
+
+    // Upper case is white, lower case is black 
     pub fn get_icon(&self) -> char {
         // Uses mask 00001110 to get the type (read more in the main README)
-        match self.0 & 14 {
+        match self.0 & 15 {
             2 => 'P',
+            3 => 'p',
+
             4 => 'N',
+            5 => 'n',
+
             6 => 'B',
+            7 => 'b',
+
             8 => 'R',
+            9 => 'r',
+
             10 => 'Q',
+            11 => 'q',
+
             12 => 'K',
+            13 => 'k',
+
             _ => '■'
         }
     }

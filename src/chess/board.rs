@@ -89,7 +89,7 @@ impl Board {
 
         if moves.contains(&_to) {
             // Get moving piece
-            let mut piece = self.mut_piece_at(Board::filerank_to_num(_from));
+            let piece = self.mut_piece_at(Board::filerank_to_num(_from));
 
             // Set moving bitflag to 0 with 01111111 flag
             piece.set_data(piece.as_u8() & 0x7f);
