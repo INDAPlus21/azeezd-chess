@@ -26,14 +26,30 @@ fn game_in_progress_after_init() {
 fn pawn_moves() {
     let mut game = Game::new();
 
-    assert_eq!(game.get_possible_moves(String::from("e2")).unwrap(), vec!["e3", "e4"]);
+    assert_eq!(game.get_possible_moves(String::from("d2")).unwrap(), vec!["d3", "d4"]);
     assert_eq!(game.get_possible_moves(String::from("e7")).unwrap(), vec!["e6", "e5"]);
 
-    game._then("e2", "e4")
+    game._then("d2", "d4")
         ._then("e7", "e6");
 
-    assert_eq!(game.get_possible_moves(String::from("e4")).unwrap(), vec!["e5"]);
+    assert_eq!(game.get_possible_moves(String::from("d4")).unwrap(), vec!["d5"]);
     assert_eq!(game.get_possible_moves(String::from("e6")).unwrap(), vec!["e5"]);
+}
+
+#[test]
+fn pawn_moves_and_attacks() {
+    let mut game = Game::new();
+
+    assert_eq!(game.get_possible_moves(String::from("d2")).unwrap(), vec!["d3", "d4"]);
+    assert_eq!(game.get_possible_moves(String::from("e7")).unwrap(), vec!["e6", "e5"]);
+
+    game._then("d2", "d4")
+        ._then("e7", "e5");
+
+    assert_eq!(game.get_possible_moves(String::from("d4")).unwrap(), vec!["d5", "e5"]);
+    assert_eq!(game.get_possible_moves(String::from("e5")).unwrap(), vec!["e4", "d4"]);
+
+    game._then("d4", "e5");
 }
 
 #[test]
