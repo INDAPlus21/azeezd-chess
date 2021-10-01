@@ -7,6 +7,7 @@ macro_rules! n_p {
     ($x:expr) => (Piece::from_u8($x));
 }
 
+/// Board struct, holds the board and threat maps
 pub struct Board{
     pub board: [[Piece; 8]; 8],
     pub white_threat_map: Vec<(i8, i8)>,
@@ -48,6 +49,7 @@ impl Board {
         }
     }
 
+    // Returns a copy of the board using a previous board
     pub fn copy(board: [[Piece; 8]; 8]) -> Board {
         Board {
             board: board,
@@ -61,6 +63,7 @@ impl Board {
         &self.board[_coordinates.1 as usize][_coordinates.0 as usize]
     }
 
+    // Get a mutable reference to a piece at a square given in numerical coordinates
     pub fn mut_piece_at(&mut self, _coordinates: (i8, i8)) -> &mut Piece {
         &mut self.board[_coordinates.1 as usize][_coordinates.0 as usize]
     }

@@ -37,6 +37,7 @@ impl Board {
         coords
     }
 
+    /// Returns true if the king is in check. By seeing if the king is in the threat map
     pub fn king_in_check(_board: &mut Board, _colour: Colour) -> bool {
         _board.generate_threat_maps();
         let king = _board.get_king(_colour);

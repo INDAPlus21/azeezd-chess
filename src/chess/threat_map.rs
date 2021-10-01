@@ -4,6 +4,8 @@ use super::piece::*;
 use std::collections::HashSet;
 
 impl Board {
+
+    /// Fills the the threat map vectors with squares that are defended or attacked by a colour
     pub fn generate_threat_maps(&mut self){
         let mut black_map: HashSet<(i8, i8)> = HashSet::with_capacity(40);
         let mut white_map: HashSet<(i8, i8)> = HashSet::with_capacity(40);
@@ -31,6 +33,7 @@ impl Board {
         self.white_threat_map = white_map.into_iter().collect();
     }
 
+    /// Get all squares that a piece can attack or defend
     fn get_piece_threat_moves(&self, _coordinates: (i8, i8), _piece: Piece, _colour: Colour) -> Option<Vec<(i8, i8)>> {
         // Store the movements
         let mut moves: Vec<(i8, i8)> = Vec::with_capacity(10);

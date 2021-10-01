@@ -3,6 +3,8 @@ use super::piece::*;
 use super::piece_data::*;
 
 impl Board {
+
+    /// Get moves that may or may not put own king in check
     pub fn get_pseudo_legal_moves(&self, _coordinates: (i8, i8)) -> Vec<(i8, i8)> {
         // Get piece
         let piece = self.piece_at(_coordinates);
@@ -29,6 +31,7 @@ impl Board {
         moves
     }
 
+    /// Returns moves that are do not put own king in check. It takes pseudo legal and filters out the ones that put own king in check
     pub fn get_legal_moves(&self, _filerank: &String) -> Vec<String> {
         let coordinates = Board::filerank_to_num(_filerank);
 

@@ -14,6 +14,7 @@ impl Piece {
         Piece(_piece_data)
     }
 
+    /// Create a new piece based on given Colour and PieceType
     pub fn new(_colour: Colour, _piece_type: PieceType) -> Piece {
         let mut piece_data : u8 = 0;
 
@@ -62,7 +63,7 @@ impl Piece {
         (self.get_colour(), self.get_type())
     }
 
-    // Sets the type of the piece, used for promotion
+    /// Sets the type of the piece, used for promotion
     pub fn set_type(&mut self, _piece_type: PieceType) {
         // Use the 11110001 mask to remove all piece bits
         let data = self.0 & 0xf1;
@@ -84,37 +85,39 @@ impl Piece {
         self.set_type(PieceType::None);
     }
 
+    /// Returns the piece's data as u8
     pub fn as_u8(&self) -> u8 {
         self.0
     }
 
 
-    // Upper case is white, lower case is black 
+    /// Returns a char that symbolizes the piece,  Uppercase is white, lowercase is black 
     pub fn get_icon(&self) -> char {
         // Uses mask 00001110 to get the type (read more in the main README)
         match self.0 & 15 {
-            2 => 'P',
-            3 => 'p',
+            2 => 'P', // White Pawn
+            3 => 'p', // Black Pawn
 
-            4 => 'N',
-            5 => 'n',
+            4 => 'N', // White Knight
+            5 => 'n', // Black Knight
 
-            6 => 'B',
-            7 => 'b',
+            6 => 'B', // White Bishop
+            7 => 'b', // Black Bishop
 
-            8 => 'R',
-            9 => 'r',
+            8 => 'R', // White Rook
+            9 => 'r', // Black Rook
 
-            10 => 'Q',
-            11 => 'q',
+            10 => 'Q', // White Queen
+            11 => 'q', // Black Queen
 
-            12 => 'K',
-            13 => 'k',
+            12 => 'K', // White King
+            13 => 'k', // Black King
 
-            _ => '■'
+            _ => '■' // Empty square
         }
     }
 
+    /// Sets the data of the current piece in u8
     pub fn set_data (&mut self, u8_data: u8) {
         self.0 = u8_data;
     }
